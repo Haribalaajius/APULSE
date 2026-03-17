@@ -1,0 +1,12 @@
+{
+    "best_model": "KNN",
+    "best_accuracy": 1.0,
+    "all_accuracies": {
+        "KNN": 1.0,
+        "SVM": 0.924,
+        "RandomForest": 1.0,
+        "XGBoost": 1.0,
+        "LSTM": 1.0,
+        "1D-CNN": 1.0
+    }
+}

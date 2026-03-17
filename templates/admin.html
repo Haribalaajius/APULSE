@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - SmartGrid</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.0/dist/apexcharts.min.js"></script>
+    <style>
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            z-index: 1000;
+            border-right: 1px solid #4a5568;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-brand h4 {
+            color: #60a5fa;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            color: #cbd5e0;
+            padding: 12px 15px;
+            margin: 8px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+        }
+
+        .nav-link.active {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border-left: 3px solid #60a5fa;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .top-navbar {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            border-bottom: 1px solid #4a5568;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -30px -30px 30px -30px;
+            margin-left: calc(-30px + 260px);
+        }
+
+        .top-navbar h2 {
+            color: #60a5fa;
+            font-weight: 700;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #60a5fa;
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #60a5fa;
+        }
+
+        .stat-label {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .chart-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .table {
+            color: #e2e8f0;
+        }
+
+        .table thead {
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .table tbody tr {
+            border-color: #374151;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(96, 165, 250, 0.05);
+        }
+
+        .badge-admin {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-user {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4><i class="fas fa-lock"></i> Admin Panel</h4>
+    </div>
+    <nav>
+        <a class="nav-link active" href="#overview"><i class="fas fa-chart-pie"></i> Overview</a>
+        <a class="nav-link" href="#statistics"><i class="fas fa-bar-chart"></i> Statistics</a>
+        <a class="nav-link" href="#users"><i class="fas fa-users"></i> Users</a>
+        <a class="nav-link" href="#settings"><i class="fas fa-cog"></i> Settings</a>
+        <hr style="border-color: #4a5568; margin: 20px 0;">
+        <a class="nav-link" href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </nav>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <!-- TOP NAVBAR -->
+    <div class="top-navbar">
+        <h2><i class="fas fa-lock"></i> Administration Panel</h2>
+        <span>{{ username }} (Admin)</span>
+    </div>
+
+    <!-- STATISTICS ROW -->
+    <div class="row mb-4" id="statsRow">
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-database"></i></div>
+                <div class="stat-label">Total Readings</div>
+                <div class="stat-value" id="totalReadings">0</div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+                <div class="stat-label">Avg Voltage</div>
+                <div class="stat-value" id="avgVoltage">0 V</div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-plug"></i></div>
+                <div class="stat-label">Avg Current</div>
+                <div class="stat-value" id="avgCurrent">0 mA</div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-wave-square"></i></div>
+                <div class="stat-label">Avg Frequency</div>
+                <div class="stat-value" id="avgFrequency">0 Hz</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 style="margin-bottom: 20px; color: #e2e8f0;"><i class="fas fa-chart-bar"></i> Voltage Statistics</h5>
+                <div id="voltageRangeChart"></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 style="margin-bottom: 20px; color: #e2e8f0;"><i class="fas fa-chart-bar"></i> Current Statistics</h5>
+                <div id="currentRangeChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FREQUENCY CHART -->
+    <div class="chart-card mb-4">
+        <h5 style="margin-bottom: 20px; color: #e2e8f0;"><i class="fas fa-chart-bar"></i> Frequency Statistics</h5>
+        <div id="frequencyRangeChart"></div>
+    </div>
+
+    <!-- USERS TABLE -->
+    <div class="chart-card mb-4">
+        <h5 style="margin-bottom: 20px; color: #e2e8f0;"><i class="fas fa-users"></i> User Management</h5>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #9ca3af;">Loading users...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODEL INFO -->
+    <div class="chart-card">
+        <h5 style="margin-bottom: 20px; color: #e2e8f0;"><i class="fas fa-brain"></i> Model Information</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Best Model:</strong> <span style="color: #60a5fa;">{{ best_model }}</span></p>
+                <p><strong>Accuracy:</strong> <span style="color: #22c55e;">{{ (best_accuracy*100)|round(2) }}%</span></p>
+            </div>
+            <div class="col-md-6">
+                <h6 style="color: #cbd5e0; margin-bottom: 10px;">All Models Performance:</h6>
+                {% for name, val in all_accuracies.items() %}
+                <p style="margin-bottom: 5px;">{{ name }}: <span style="color: #60a5fa; font-weight: 700;">{{ (val*100)|round(2) }}%</span></p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const chartOptions = {
+        chart: {
+            background: 'transparent',
+            toolbar: { show: false },
+            animations: { enabled: true }
+        },
+        theme: { mode: 'dark' },
+        grid: { borderColor: '#374151' }
+    };
+
+    // Voltage Range Chart
+    const voltageRangeChart = new ApexCharts(document.getElementById('voltageRangeChart'), {
+        ...chartOptions,
+        chart: { ...chartOptions.chart, type: 'bar' },
+        series: [
+            { name: 'Min', data: [0] },
+            { name: 'Avg', data: [0] },
+            { name: 'Max', data: [0] }
+        ],
+        colors: ['#ef4444', '#60a5fa', '#22c55e'],
+        xaxis: { categories: ['Voltage (V)'] }
+    });
+    voltageRangeChart.render();
+
+    // Current Range Chart
+    const currentRangeChart = new ApexCharts(document.getElementById('currentRangeChart'), {
+        ...chartOptions,
+        chart: { ...chartOptions.chart, type: 'bar' },
+        series: [
+            { name: 'Min', data: [0] },
+            { name: 'Avg', data: [0] },
+            { name: 'Max', data: [0] }
+        ],
+        colors: ['#ef4444', '#60a5fa', '#22c55e'],
+        xaxis: { categories: ['Current (mA)'] }
+    });
+    currentRangeChart.render();
+
+    // Frequency Range Chart
+    const frequencyRangeChart = new ApexCharts(document.getElementById('frequencyRangeChart'), {
+        ...chartOptions,
+        chart: { ...chartOptions.chart, type: 'bar' },
+        series: [
+            { name: 'Min', data: [0] },
+            { name: 'Avg', data: [0] },
+            { name: 'Max', data: [0] }
+        ],
+        colors: ['#ef4444', '#60a5fa', '#22c55e'],
+        xaxis: { categories: ['Frequency (Hz)'] }
+    });
+    frequencyRangeChart.render();
+
+    // Load Statistics
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/admin/stats');
+            const data = await res.json();
+
+            document.getElementById('totalReadings').textContent = data.total_readings;
+            document.getElementById('avgVoltage').textContent = data.voltage.avg.toFixed(2) + ' V';
+            document.getElementById('avgCurrent').textContent = data.current.avg.toFixed(2) + ' mA';
+            document.getElementById('avgFrequency').textContent = data.frequency.avg.toFixed(2) + ' Hz';
+
+            // Update Charts
+            voltageRangeChart.updateSeries([
+                { data: [data.voltage.min] },
+                { data: [data.voltage.avg] },
+                { data: [data.voltage.max] }
+            ]);
+
+            currentRangeChart.updateSeries([
+                { data: [data.current.min] },
+                { data: [data.current.avg] },
+                { data: [data.current.max] }
+            ]);
+
+            frequencyRangeChart.updateSeries([
+                { data: [data.frequency.min] },
+                { data: [data.frequency.avg] },
+                { data: [data.frequency.max] }
+            ]);
+        } catch (err) {
+            console.warn("Stats load error:", err);
+        }
+    }
+
+    // Load Users
+    async function loadUsers() {
+        try {
+            const res = await fetch('/api/admin/users');
+            const data = await res.json();
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = '';
+
+            data.users.forEach(user => {
+                const badge = user.is_admin ? '<span class="badge-admin">Admin</span>' : '<span class="badge-user">User</span>';
+                const row = `
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${badge}</td>
+                        <td><span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Active</span></td>
+                        <td><button class="btn btn-sm btn-outline-danger">Disable</button></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        } catch (err) {
+            console.warn("Users load error:", err);
+        }
+    }
+
+    loadStats();
+    loadUsers();
+    setInterval(loadStats, 30000); // Refresh every 30 seconds
+</script>
+
+</body>
+</html>

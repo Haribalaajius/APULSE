@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Grid Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.0/dist/apexcharts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            z-index: 1000;
+            border-right: 1px solid #4a5568;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-brand h4 {
+            color: #60a5fa;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .sidebar-nav {
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin: 8px 0;
+        }
+
+        .nav-link {
+            color: #cbd5e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border-left: 3px solid #60a5fa;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation Bar */
+        .top-navbar {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            border-bottom: 1px solid #4a5568;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -30px -30px 30px -30px;
+            margin-left: calc(-30px + 260px);
+        }
+
+        .top-navbar h2 {
+            color: #60a5fa;
+            font-weight: 700;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            border-color: #60a5fa;
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.2);
+        }
+
+        .kpi-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .kpi-label {
+            color: #9ca3af;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 10px;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .status-normal {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+        .status-fault {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Charts */
+        .chart-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            color: #e2e8f0;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* Alerts */
+        .alert-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-banner.show {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+            color: #ef4444;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: #3b82f6;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        /* Tables */
+        .table-responsive {
+            border: 1px solid #374151;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table {
+            color: #e2e8f0;
+        }
+
+        .table thead {
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .table tbody tr {
+            border-color: #374151;
+            transition: background 0.2s;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(96, 165, 250, 0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding-top: 60px;
+            }
+
+            .sidebar-brand {
+                padding: 15px 5px;
+            }
+
+            .sidebar-brand h4 {
+                font-size: 14px;
+            }
+
+            .nav-link {
+                padding: 10px 5px;
+                text-align: center;
+            }
+
+            .main-content {
+                margin-left: 70px;
+                padding: 15px;
+            }
+
+            .top-navbar {
+                margin-left: calc(-15px + 70px);
+            }
+
+            .kpi-value {
+                font-size: 24px;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .model-comparison {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .badge-model {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 5px;
+            font-weight: 600;
+        }
+
+        .best-model {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4><i class="fas fa-bolt" style="color: #60a5fa;"></i> SmartGrid</h4>
+    </div>
+    <nav class="sidebar-nav">
+        <li class="nav-item"><a class="nav-link active" href="#dashboard"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#analytics"><i class="fas fa-bar-chart"></i> <span>Analytics</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#models"><i class="fas fa-brain"></i> <span>Models</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#alerts"><i class="fas fa-bell"></i> <span>Alerts</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#settings"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin"><i class="fas fa-lock"></i> <span>Admin</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="/export"><i class="fas fa-download"></i> <span>Export</span></a></li>
+    </nav>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <!-- TOP NAVBAR -->
+    <div class="top-navbar">
+        <h2><i class="fas fa-bolt"></i> Smart Grid Monitoring</h2>
+        <div class="user-profile">
+            <span id="lastUpdate">Last Update: --:--</span>
+            <div class="user-avatar">UA</div>
+            <a href="/logout" class="btn btn-sm btn-outline-danger">Logout</a>
+        </div>
+    </div>
+
+    <!-- ALERT BANNER -->
+    <div class="alert-banner" id="alertBanner">
+        <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div>
+            <strong>System Alert!</strong>
+            <p id="alertMessage" style="margin: 5px 0 0 0;">A fault has been detected in the grid system.</p>
+        </div>
+    </div>
+
+    <!-- KPI CARDS ROW 1 -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card fade-in">
+                <div class="kpi-icon"><i class="fas fa-bolt" style="color: #fbbf24;"></i></div>
+                <div class="kpi-label">Voltage</div>
+                <div class="kpi-value" id="voltage">-- V</div>
+                <div class="kpi-change"><span style="color: #22c55e;"><i class="fas fa-arrow-up"></i> Normal</span></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card fade-in">
+                <div class="kpi-icon"><i class="fas fa-plug" style="color: #3b82f6;"></i></div>
+                <div class="kpi-label">Current</div>
+                <div class="kpi-value" id="current">-- mA</div>
+                <div class="kpi-change"><span style="color: #22c55e;"><i class="fas fa-arrow-up"></i> Stable</span></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card fade-in">
+                <div class="kpi-icon"><i class="fas fa-wave-square" style="color: #8b5cf6;"></i></div>
+                <div class="kpi-label">Frequency</div>
+                <div class="kpi-value" id="frequency">-- Hz</div>
+                <div class="kpi-change"><span style="color: #22c55e;"><i class="fas fa-arrow-down"></i> Optimal</span></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="kpi-card fade-in">
+                <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="kpi-label">System Status</div>
+                <div style="margin-top: 10px;">
+                    <span class="status-badge status-normal" id="statusBadge">NORMAL</span>
+                </div>
+                <div id="faultTip" style="margin-top: 10px; font-size: 12px; color: #22c55e;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODEL COMPARISON -->
+    <div class="model-comparison">
+        <h5 style="margin-bottom: 20px;"><i class="fas fa-trophy"></i> Model Performance Comparison</h5>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <div class="badge-model best-model">🏆 Best Model: <strong>{{ best_model }}</strong></div>
+            <div class="badge-model" style="background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid #60a5fa;">Accuracy: <strong>{{ (best_accuracy*100)|round(2) }}%</strong></div>
+        </div>
+        <div style="margin-top: 15px;">
+            <h6 style="color: #cbd5e0; margin-bottom: 10px;">All Models Accuracy:</h6>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                {% for name, val in all_accuracies.items() %}
+                <div style="background: rgba(96, 165, 250, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #60a5fa;">
+                    <div style="color: #cbd5e0; font-size: 12px;">{{ name }}</div>
+                    <div style="color: #60a5fa; font-weight: 700; font-size: 18px;">{{ (val*100)|round(2) }}%</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 class="chart-title"><i class="fas fa-chart-line"></i> Voltage Trend</h5>
+                <div id="voltageChart"></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 class="chart-title"><i class="fas fa-chart-line"></i> Current Trend</h5>
+                <div id="currentChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 class="chart-title"><i class="fas fa-chart-line"></i> Frequency Trend</h5>
+                <div id="frequencyChart"></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 class="chart-title"><i class="fas fa-pie-chart"></i> System Health</h5>
+                <div id="healthChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVE DATA TABLE -->
+    <div class="chart-card">
+        <h5 class="chart-title"><i class="fas fa-table"></i> Live Data Feed</h5>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Voltage (V)</th>
+                        <th>Current (mA)</th>
+                        <th>Frequency (Hz)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="liveTable">
+                    <tr><td colspan="5" style="text-align: center; color: #9ca3af;">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- VISUALIZATION IMAGES -->
+    <div class="chart-card">
+        <h5 class="chart-title"><i class="fas fa-images"></i> Training Visualizations</h5>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <img src="/static/class_distribution.png" class="img-fluid rounded" style="max-width: 100%; border: 1px solid #374151;">
+            </div>
+            <div class="col-md-6 mb-3">
+                <img src="/static/correlation_heatmap.png" class="img-fluid rounded" style="max-width: 100%; border: 1px solid #374151;">
+            </div>
+            <div class="col-md-6 mb-3">
+                <img src="/static/accuracy_comparison.png" class="img-fluid rounded" style="max-width: 100%; border: 1px solid #374151;">
+            </div>
+            <div class="col-md-6 mb-3">
+                <img src="/static/feature_importance.png" class="img-fluid rounded" style="max-width: 100%; border: 1px solid #374151;">
+            </div>
+        </div>
+        <h6 style="margin-top: 20px; margin-bottom: 10px;">Confusion Matrices:</h6>
+        <div class="row">
+            {% for name, val in all_accuracies.items() %}
+            <div class="col-md-4 mb-3">
+                <img src="/static/cm_{{name}}.png" class="img-fluid rounded" style="max-width: 100%; border: 1px solid #374151;">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- AUDIO ALERT -->
+<audio id="alertSound" src="/static/fault_alert.mp3" loop></audio>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Data storage
+    let voltageData = [];
+    let currentData = [];
+    let frequencyData = [];
+    let timestamps = [];
+    const MAX_POINTS = 30;
+
+    // Apex Charts Configuration
+    const chartOptions = {
+        chart: {
+            background: 'transparent',
+            toolbar: { show: false },
+            animations: { enabled: true, easing: 'easeinout', speed: 800 }
+        },
+        theme: { mode: 'dark' },
+        xaxis: { type: 'datetime' },
+        grid: { borderColor: '#374151' },
+        stroke: { curve: 'smooth', width: 2 }
+    };
+
+    // Initialize Charts
+    const voltageChart = new ApexCharts(document.getElementById('voltageChart'), {
+        ...chartOptions,
+        series: [{ name: 'Voltage (V)', data: [] }],
+        colors: ['#fbbf24'],
+        yaxis: { min: 210, max: 230, title: { text: 'V' } }
+    });
+    voltageChart.render();
+
+    const currentChart = new ApexCharts(document.getElementById('currentChart'), {
+        ...chartOptions,
+        series: [{ name: 'Current (mA)', data: [] }],
+        colors: ['#3b82f6'],
+        yaxis: { min: 0, max: 150, title: { text: 'mA' } }
+    });
+    currentChart.render();
+
+    const frequencyChart = new ApexCharts(document.getElementById('frequencyChart'), {
+        ...chartOptions,
+        series: [{ name: 'Frequency (Hz)', data: [] }],
+        colors: ['#8b5cf6'],
+        yaxis: { min: 45, max: 55, title: { text: 'Hz' } }
+    });
+    frequencyChart.render();
+
+    const healthChart = new ApexCharts(document.getElementById('healthChart'), {
+        ...chartOptions,
+        chart: { ...chartOptions.chart, type: 'radialBar' },
+        series: [92],
+        colors: ['#22c55e'],
+        plotOptions: { radialBar: { hollow: { size: '60%' }, track: { background: '#374151' } } },
+        labels: ['System Health']
+    });
+    healthChart.render();
+
+    // Utility functions
+    function toNum(v) {
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    function getTip(fault) {
+        const tips = {
+            "NORMAL": "✓ System stable and operating normally.",
+            "OPEN_VOLTAGE_FAULT": "⚠ Loose terminal detected → Tighten wiring connections.",
+            "SHORT_CIRCUIT_FAULT": "🚨 DANGER! Immediate action required → Disconnect load.",
+            "HIGH_VOLTAGE_FAULT": "⚠ Voltage spike detected → Check transformer settings.",
+            "FREQUENCY_FAULT": "⚠ Generator frequency unstable → Check synchronization.",
+            "UNKNOWN_FAULT": "❓ Manual check required."
+        };
+        return tips[fault] || tips["UNKNOWN_FAULT"];
+    }
+
+    function handleAlertSound(fault) {
+        let snd = document.getElementById("alertSound");
+        if (fault !== "NORMAL") {
+            snd.play().catch(() => {});
+        } else {
+            snd.pause();
+            snd.currentTime = 0;
+        }
+    }
+
+    function updateKPIs(volt, curr, freq, status) {
+        document.getElementById("voltage").textContent = volt !== null ? `${volt.toFixed(2)} V` : "-- V";
+        document.getElementById("current").textContent = curr !== null ? `${curr.toFixed(2)} mA` : "-- mA";
+        document.getElementById("frequency").textContent = freq !== null ? `${freq.toFixed(2)} Hz` : "-- Hz";
+        
+        const badge = document.getElementById("statusBadge");
+        badge.textContent = status || "UNKNOWN";
+        badge.className = `status-badge ${status === "NORMAL" ? "status-normal" : "status-fault"}`;
+        
+        document.getElementById("faultTip").textContent = getTip(status);
+        
+        // Show/hide alert banner
+        const alertBanner = document.getElementById("alertBanner");
+        if (status !== "NORMAL") {
+            alertBanner.classList.add("show");
+            document.getElementById("alertMessage").textContent = getTip(status);
+        } else {
+            alertBanner.classList.remove("show");
+        }
+        
+        handleAlertSound(status);
+        document.getElementById("lastUpdate").textContent = `Last Update: ${new Date().toLocaleTimeString()}`;
+    }
+
+    function updateTable(volt, curr, freq, status) {
+        const tbody = document.getElementById("liveTable");
+        const row = tbody.insertRow(0);
+        row.innerHTML = `
+            <td>${new Date().toLocaleTimeString()}</td>
+            <td>${volt !== null ? volt.toFixed(2) : '--'}</td>
+            <td>${curr !== null ? curr.toFixed(2) : '--'}</td>
+            <td>${freq !== null ? freq.toFixed(2) : '--'}</td>
+            <td><span class="status-badge ${status === 'NORMAL' ? 'status-normal' : 'status-fault'}">${status}</span></td>
+        `;
+        while (tbody.rows.length > 20) {
+            tbody.deleteRow(tbody.rows.length - 1);
+        }
+    }
+
+    async function loadData() {
+        try {
+            // Load current reading
+            let res = await fetch('/live-data');
+            let current = await res.json();
+            
+            // Load history
+            let histRes = await fetch('/api/hardware/history?limit=' + MAX_POINTS);
+            let history = await histRes.json();
+            let feeds = history.data || [];
+
+            if (!feeds.length && current.status === "DISCONNECTED") {
+                console.warn("No hardware data available");
+                return;
+            }
+
+            let lastStatus = current.fault || "UNKNOWN";
+
+            feeds.forEach(f => {
+                const timestamp = new Date(f.timestamp).getTime();
+                const volt = toNum(f.voltage);
+                const curr = toNum(f.current);
+                const freq = toNum(f.frequency);
+                const status = f.fault || "NORMAL";
+
+                if (volt !== null) {
+                    voltageData.push({ x: timestamp, y: volt });
+                    voltageData = voltageData.slice(-MAX_POINTS);
+                }
+                if (curr !== null) {
+                    currentData.push({ x: timestamp, y: curr });
+                    currentData = currentData.slice(-MAX_POINTS);
+                }
+                if (freq !== null) {
+                    frequencyData.push({ x: timestamp, y: freq });
+                    frequencyData = frequencyData.slice(-MAX_POINTS);
+                }
+
+                lastStatus = status;
+            });
+
+            // Update charts
+            voltageChart.updateSeries([{ data: voltageData }]);
+            currentChart.updateSeries([{ data: currentData }]);
+            frequencyChart.updateSeries([{ data: frequencyData }]);
+
+            // Update KPIs
+            const lastVolt = current.voltage !== undefined ? current.voltage : null;
+            const lastCurr = current.current !== undefined ? current.current : null;
+            const lastFreq = current.frequency !== undefined ? current.frequency : null;
+
+            updateKPIs(lastVolt, lastCurr, lastFreq, lastStatus);
+            updateTable(lastVolt, lastCurr, lastFreq, lastStatus);
+            
+            // Show connection status
+            const statusEl = document.getElementById("lastUpdate");
+            if (current.status === "CONNECTED") {
+                statusEl.innerHTML = `<i class="fas fa-wifi" style="color: #22c55e;"></i> Connected • Last Update: ${new Date(current.timestamp).toLocaleTimeString()}`;
+                statusEl.style.color = "#22c55e";
+            } else {
+                statusEl.innerHTML = `<i class="fas fa-wifi-slash" style="color: #ef4444;"></i> Disconnected`;
+                statusEl.style.color = "#ef4444";
+            }
+
+        } catch (err) {
+            console.warn("Live update error:", err);
+            const statusEl = document.getElementById("lastUpdate");
+            statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Connection Error`;
+            statusEl.style.color = "#ef4444";
+        }
+    }
+
+    // Load data immediately and then every 5 seconds
+    loadData();
+    setInterval(loadData, 5000);
+
+    // Sidebar toggle for mobile
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.addEventListener("click", function(e) {
+            document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+            this.classList.add("active");
+        });
+    });
+</script>
+
+</body>
+</html>
