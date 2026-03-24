@@ -19,7 +19,7 @@ try:
     NORMAL_URL = f"http://{ESP_IP}/2"
 
     # ===== FLASK DASHBOARD =====
-    FLASK_URL = "http://localhost:5000/api/hardware/data"  # Flask endpoint
+    FLASK_URL = "https://gpulse-1mnm.onrender.com/api/hardware/data"  # Flask endpoint (Render)
 
     THINGSPEAK_API_KEY = "3J6LJDI7PCAU2IVL"
     THINGSPEAK_URL     = "https://api.thingspeak.com/update"
